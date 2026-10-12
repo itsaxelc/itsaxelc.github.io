@@ -87,7 +87,7 @@ export default async function Project({ params }: ProjectPageProps) {
               alt={siteConfig.authorName}
               width={42}
               height={42}
-              className="rounded-full bg-background"
+              className="h-[42px] w-[42px] rounded-full bg-background object-cover object-top"
             />
 
             <div className="flex-1 text-left leading-tight">

@@ -1,7 +1,7 @@
 import { asset, basePath } from "@/lib/base-path";
 
 // TODO: replace the placeholder values in this file with your own.
-const authorName = "Cedric";
+const authorName = "Cédric COMPAORE";
 const username = "itsaxelc";
 const origin =
   process.env.NEXT_PUBLIC_SITE_ORIGIN || `https://${username}.github.io`;
