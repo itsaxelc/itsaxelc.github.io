@@ -1,0 +1,175 @@
+"use client";
+
+import Image, { StaticImageData } from "next/image";
+import { useEffect, useState } from "react";
+
+import { cn } from "@/lib/utils";
+
+interface StudioLampProps {
+  src: StaticImageData;
+  alt: string;
+  className?: string;
+}
+
+/**
+ * A single LED light bar suspended above the portrait: a slim dark bezel
+ * housing a frosted diffuser lens, with a soft toggle. Kept to just the
+ * bar itself (no arms, vents, or mount hardware) so it reads as a real,
+ * compact fixture rather than an illustrated object.
+ */
+export function StudioLamp({ src, alt, className }: StudioLampProps) {
+  const [on, setOn] = useState(false);
+  const [flicker, setFlicker] = useState(false);
+
+  // Starts off, then powers on shortly after the page loads — visitors
+  // land on a dark lamp and watch it switch on.
+  useEffect(() => {
+    const powerOn = setTimeout(() => setOn(true), 500);
+    return () => clearTimeout(powerOn);
+  }, []);
+
+  // Brief power-up flicker whenever the light switches on (including the
+  // delayed initial power-on above).
+  useEffect(() => {
+    if (!on) return;
+    setFlicker(true);
+    const t = setTimeout(() => setFlicker(false), 360);
+    return () => clearTimeout(t);
+  }, [on]);
+
+  return (
+    <div className={cn("relative flex flex-col items-center", className)}>
+      {/* ---------- LED bar ---------- */}
+      {/* Squared aluminum-extrusion housing (matches the site's rounded-md
+          radius, not a pill) with small mounting tabs at each end so it
+          reads as a machined instrument, not a rounded consumer object. */}
+      <div className="relative z-20 flex items-center gap-[3px]">
+        <span
+          className={cn(
+            "h-2.5 w-[2px] rounded-[1px] transition-colors duration-300",
+            on ? "bg-primary/60" : "bg-muted-foreground/25"
+          )}
+          aria-hidden="true"
+        />
+        <div
+          className={cn(
+            "w-[12rem] rounded-[3px] p-[2.5px] transition-colors duration-300 sm:w-[14rem]",
+            on
+              ? "bg-slate-800/90 dark:bg-slate-950/90"
+              : "bg-slate-700/50 dark:bg-slate-900/60"
+          )}
+          style={{
+            boxShadow: on
+              ? "0 0 16px 3px hsl(var(--primary) / 0.7), 0 0 55px 18px hsl(var(--primary) / 0.32), 0 1px 2px hsl(0 0% 0% / 0.3)"
+              : "0 1px 2px hsl(0 0% 0% / 0.2)",
+          }}
+        >
+          {/* Diffuser lens: the actual emitting surface */}
+          <div
+            className={cn(
+              "h-[8px] rounded-[1.5px] transition-all duration-300 sm:h-[10px]",
+              flicker && on && "animate-[lamp-flicker_360ms_steps(3,end)]"
+            )}
+            style={{
+              background: on
+                ? "linear-gradient(180deg, hsl(0 0% 100% / 0.95) 0%, hsl(var(--primary)) 40%, hsl(var(--primary) / 0.8) 100%)"
+                : "linear-gradient(180deg, hsl(var(--muted-foreground) / 0.35) 0%, hsl(var(--muted-foreground) / 0.18) 100%)",
+              boxShadow: on
+                ? "inset 0 1.5px 1px hsl(0 0% 100% / 0.65), inset 0 -2px 2.5px hsl(var(--primary) / 0.6)"
+                : "inset 0 1px 1px hsl(0 0% 100% / 0.06)",
+            }}
+            aria-hidden="true"
+          />
+        </div>
+        <span
+          className={cn(
+            "h-2.5 w-[2px] rounded-[1px] transition-colors duration-300",
+            on ? "bg-primary/60" : "bg-muted-foreground/25"
+          )}
+          aria-hidden="true"
+        />
+      </div>
+
+      {/* ---------- Diffuse wash of light (soft-edged, no hard cone) ---------- */}
+      <div
+        className={cn(
+          "pointer-events-none absolute left-1/2 top-0 z-0 h-[26rem] w-[30rem] -translate-x-1/2 transition-opacity",
+          on ? "opacity-100 duration-500 delay-150" : "opacity-0 duration-300"
+        )}
+        style={{
+          background:
+            "radial-gradient(ellipse 42% 58% at 50% 0%, hsl(var(--primary) / 0.28), transparent 70%)",
+        }}
+        aria-hidden="true"
+      />
+
+      {/* ---------- Portrait ---------- */}
+      <div className="relative z-10 mt-9 w-[15rem] sm:w-[17.5rem]">
+        <div
+          className={cn(
+            "relative overflow-hidden rounded-lg border transition-all",
+            on
+              ? "border-primary/40 shadow-2xl shadow-primary/20 duration-700 delay-300"
+              : "border-border shadow-md duration-300"
+          )}
+        >
+          <Image
+            src={src}
+            width={420}
+            height={525}
+            sizes="(max-width: 640px) 60vw, 17.5rem"
+            className={cn(
+              "aspect-[4/5] w-full object-cover transition-all",
+              on
+                ? "brightness-105 duration-700 delay-300"
+                : "brightness-[0.55] saturate-50 duration-300"
+            )}
+            alt={alt}
+            priority
+          />
+          {/* Light falling across the top of the portrait */}
+          <div
+            className={cn(
+              "pointer-events-none absolute inset-x-0 top-0 h-1/2 transition-opacity",
+              on
+                ? "opacity-100 duration-500 delay-200"
+                : "opacity-0 duration-200"
+            )}
+            style={{
+              background:
+                "linear-gradient(180deg, hsl(var(--primary) / 0.22), transparent 82%)",
+            }}
+            aria-hidden="true"
+          />
+        </div>
+      </div>
+
+      {/* ---------- Toggle ---------- */}
+      <button
+        type="button"
+        role="switch"
+        aria-checked={on}
+        aria-label="Toggle the portrait light"
+        onClick={() => setOn((v) => !v)}
+        className="relative z-20 mt-7 flex items-center gap-3 rounded-full border border-border bg-card px-4 py-2 shadow-sm transition-all duration-150 hover:border-primary/50 active:scale-95"
+      >
+        <span className="font-mono text-[10px] uppercase tracking-[0.2em] text-muted-foreground">
+          Light
+        </span>
+        <span
+          className={cn(
+            "relative h-5 w-9 rounded-full transition-colors duration-300",
+            on ? "bg-primary" : "bg-muted-foreground/30"
+          )}
+        >
+          <span
+            className={cn(
+              "absolute top-0.5 h-4 w-4 rounded-full bg-white shadow transition-all duration-300 ease-out",
+              on ? "left-[1.125rem]" : "left-0.5"
+            )}
+          />
+        </span>
+      </button>
+    </div>
+  );
+}
